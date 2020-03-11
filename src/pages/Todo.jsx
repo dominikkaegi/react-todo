@@ -1,44 +1,44 @@
-import React, { useState } from "react";
-
-const initialTodos = [
-  {
-    task: "Workout at 7 am",
-    isDone: false,
-    id: "1"
-  },
-  {
-    task: "Prepare React Course",
-    isDone: false,
-    id: "2"
-  },
-  {
-    task: "Eat chocolate",
-    isDone: false,
-    id: "3"
-  }
-];
+import React, { useState, useEffect } from "react";
+import { db } from "../utils/base";
+import { getAllTodos, createTodo, deleteTodo } from "../utils/todos";
 
 const Todo = () => {
-  const [todos, setTodos] = useState(initialTodos);
+  const [todos, setTodos] = useState([]);
 
-  const newTodoHandler = newTodo => {
-    setTodos([...todos, newTodo]);
+  useEffect(() => {
+    getAllTodos().then(todos => {
+      setTodos(todos);
+    });
+  }, []);
+
+  const newTodoHandler = todoText => {
+    createTodo({ task: todoText, isDone: false }).then(newTodo => {
+      setTodos([...todos, newTodo]);
+    });
   };
 
   const deleteHandler = id => {
-    setTodos(todos => todos.filter(item => item.id !== id));
+    deleteTodo(id).then(() => {
+      setTodos(todos => todos.filter(item => item.id !== id));
+    });
   };
 
-  const toggleDoneHandler = id => {
-    setTodos(todos =>
-      todos.map(item => {
-        if (item.id === id) {
-          item.isDone = !item.isDone;
-        }
-        return item;
-      })
-    );
+  const toggleDoneHandler = todo => {
+    db.collection("todos")
+      .doc(todo.id)
+      .update({ isDone: !todo.isDone })
+      .then(item => {
+        setTodos(todos =>
+          todos.map(item => {
+            if (item.id === todo.id) {
+              item.isDone = !item.isDone;
+            }
+            return item;
+          })
+        );
+      });
   };
+
   return (
     <>
       <div className="flex justify-center align-center font-sans">
@@ -77,13 +77,7 @@ const TodoInput = ({ onNewTodo }) => {
   const submitHandler = e => {
     e.preventDefault();
     if (input.length > 0) {
-      let newTodo = {
-        task: input,
-        isDone: false,
-        id: Math.floor(Math.random() * 1000000)
-      };
-
-      onNewTodo(newTodo);
+      onNewTodo(input);
       setInput("");
     }
   };
@@ -118,28 +112,38 @@ const TodoList = ({ todos, onToggleDone, onDelete }) => {
     <div className="mt-5">
       {todos.map(todo => {
         return (
-          <div
-            name="todo"
-            className="bg-gray-200 text-gray-700 border-b-2 flex rounded"
+          <TodoItem
             key={todo.id}
-          >
-            <button
-              onClick={() => onDelete(todo.id)}
-              className="p-3 text-red-400"
-            >
-              DEL
-            </button>
-            <span
-              onClick={() => onToggleDone(todo.id)}
-              className={`inline-block cursor-pointer select-none p-3 pl-0 ${
-                todo.isDone ? "line-through text-gray-500" : ""
-              }`}
-            >
-              {todo.task}
-            </span>
-          </div>
+            todo={todo}
+            onDelete={onDelete}
+            onToggleDone={onToggleDone}
+          />
         );
       })}
+    </div>
+  );
+};
+
+const TodoItem = props => {
+  const { todo, onDelete, onToggleDone } = props;
+
+  return (
+    <div
+      name="todo"
+      className="bg-gray-200 text-gray-700 border-b-2 flex rounded"
+      key={todo.id}
+    >
+      <button onClick={() => onDelete(todo.id)} className="p-3 text-red-400">
+        DEL
+      </button>
+      <span
+        onClick={() => onToggleDone(todo)}
+        className={`inline-block cursor-pointer select-none p-3 pl-0 ${
+          todo.isDone ? "line-through text-gray-500" : ""
+        }`}
+      >
+        {todo.task}
+      </span>
     </div>
   );
 };
