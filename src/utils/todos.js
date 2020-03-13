@@ -11,7 +11,6 @@ export const getAllTodos = userId => {
           id: item.id
         };
       });
-      console.log("getting totods of user: ", todos);
       return todos;
     });
 };
