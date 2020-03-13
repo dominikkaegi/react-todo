@@ -8,6 +8,73 @@ import {
 
 import useAuth from "../hooks/useAuth";
 
+function TodoPage() {
+  const [loading, setLoading] = useState(true);
+  const [todos, setTodos] = useState([]);
+
+  const { auth } = useAuth();
+  const { uid: userId = "" } = auth || {};
+
+  useEffect(() => {
+    if (!userId) return;
+    let isCurrent = true;
+    getAllTodos(userId).then(todos => {
+      if (isCurrent) {
+        setTodos(todos);
+        setLoading(false);
+      }
+    });
+    return function() {
+      isCurrent = false;
+    };
+  }, [userId]);
+
+  const newInputHandler = todoText => {
+    createTodo(userId, { task: todoText }).then(newTodo => {
+      setTodos([...todos, newTodo]);
+    });
+  };
+
+  const onDeleteHandler = id => {
+    deleteTodo(userId, id).then(() => {
+      let filteredTodos = todos.filter(todo => {
+        return todo.id !== id;
+      });
+      setTodos(filteredTodos);
+    });
+  };
+
+  const onToggleDoneHander = todo => {
+    toggleIsDone(userId, todo).then(() => {
+      const newTodos = todos.map(item => {
+        if (item.id !== todo.id) {
+          return item;
+        }
+        item.isDone = !item.isDone;
+        return item;
+      });
+      setTodos(newTodos);
+    });
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div className="flex justify-center">
+      <div className="md:w-4/6">
+        <Input onNewInput={newInputHandler} />
+        <TodoList
+          todos={todos}
+          onDelete={onDeleteHandler}
+          onToggleDone={onToggleDoneHander}
+        />
+      </div>
+    </div>
+  );
+}
+
 function Input(props) {
   const { onNewInput } = props;
 
@@ -99,73 +166,6 @@ function TodoListItem(props) {
       >
         {todo.task}
       </span>
-    </div>
-  );
-}
-
-function TodoPage() {
-  const [loading, setLoading] = useState(true);
-  const [todos, setTodos] = useState([]);
-
-  const { auth } = useAuth();
-  const { uid: userId = "" } = auth || {};
-
-  useEffect(() => {
-    if (!userId) return;
-    let isCurrent = true;
-    getAllTodos(userId).then(todos => {
-      if (isCurrent) {
-        setTodos(todos);
-        setLoading(false);
-      }
-    });
-    return function() {
-      isCurrent = false;
-    };
-  }, [userId]);
-
-  const newInputHandler = todoText => {
-    createTodo(userId, { task: todoText }).then(newTodo => {
-      setTodos([...todos, newTodo]);
-    });
-  };
-
-  const onDeleteHandler = id => {
-    deleteTodo(userId, id).then(() => {
-      let filteredTodos = todos.filter(todo => {
-        return todo.id !== id;
-      });
-      setTodos(filteredTodos);
-    });
-  };
-
-  const onToggleDoneHander = todo => {
-    toggleIsDone(userId, todo).then(() => {
-      const newTodos = todos.map(item => {
-        if (item.id !== todo.id) {
-          return item;
-        }
-        item.isDone = !item.isDone;
-        return item;
-      });
-      setTodos(newTodos);
-    });
-  };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  return (
-    <div className="flex justify-center">
-      <div className="md:w-4/6">
-        <Input onNewInput={newInputHandler} />
-        <TodoList
-          todos={todos}
-          onDelete={onDeleteHandler}
-          onToggleDone={onToggleDoneHander}
-        />
-      </div>
     </div>
   );
 }
