@@ -1,22 +1,67 @@
-import React, { useState } from "react";
+import React, { useState, useReducer } from "react";
 
 import { signup } from "../utils/auth";
 
+const initalState = {
+  nickname: "",
+  email: "",
+  password: "",
+  loading: false,
+  submitDisabled: false,
+  error: null
+};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case "FORM_INPUT": {
+      return {
+        ...state,
+        [action.field]: action.value
+      };
+    }
+    case "SIGNUP": {
+      return {
+        ...state,
+        loading: true,
+        submitDisabled: true
+      };
+    }
+    case "SIGNUP_ERROR": {
+      return {
+        ...state,
+        loading: false,
+        submitDisabled: false,
+        error: action.error
+      };
+    }
+    default:
+      return state;
+  }
+}
+
 function SignupForm() {
-  const [loading, setLoading] = useState(false);
-  const [nickname, setNickname] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [state, dispatch] = useReducer(reducer, initalState);
+  const { loading, nickname, email, password, submitDisabled, error } =
+    state || {};
+
+  const onChange = e => {
+    dispatch({
+      type: "FORM_INPUT",
+      field: e.target.name,
+      value: e.target.value
+    });
+  };
 
   const onSubmitHandler = event => {
     event.preventDefault();
-    setLoading(true);
+    dispatch({ type: "SIGNUP" });
     signup({ email, password, displayName: nickname })
       .then(() => {
-        console.log("successful, move on to Todo screen");
+        console.log("signup");
       })
-      .catch(e => {
-        console.error(e);
+      .catch(err => {
+        dispatch({ type: "SIGNUP_ERROR", error: err.message });
+        console.error(err);
       });
   };
 
@@ -26,16 +71,18 @@ function SignupForm() {
       className="p-3"
       style={{ display: "flex", flexDirection: "column" }}
     >
+      <span className="text-red-800">{error}</span>
       <label className="text-gray-800" htmlFor="nickname">
         Nickname
       </label>
       <input
         className="bg-gray-200 rounded p-3 flex-grow text-gray-700"
         id="nickname"
+        name="nickname"
         type="text"
         placeholder="Jim"
         value={nickname}
-        onChange={event => setNickname(event.target.value)}
+        onChange={onChange}
       />
       <label className="text-gray-800" htmlFor="email">
         E-mail
@@ -43,10 +90,11 @@ function SignupForm() {
       <input
         className="bg-gray-200 rounded p-3 flex-grow text-gray-700"
         id="email"
+        name="email"
         type="email"
         placeholder="jim@gmail.com"
         value={email}
-        onChange={event => setEmail(event.target.value)}
+        onChange={onChange}
       />
       <label className="text-gray-800" htmlFor="password">
         Password
@@ -54,13 +102,15 @@ function SignupForm() {
       <input
         className="bg-gray-200 rounded p-3 flex-grow text-gray-700"
         id="password"
+        name="password"
         type="password"
         value={password}
-        onChange={event => setPassword(event.target.value)}
+        onChange={onChange}
       />
       <button
         className="bg-orange-300 p-3 rounded text-gray-800 mt-2"
         type="submit"
+        disabled={submitDisabled}
       >
         Signup{loading ? "..." : ""}
       </button>
