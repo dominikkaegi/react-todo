@@ -6,6 +6,8 @@ import {
   toggleIsDone
 } from "../utils/todos";
 
+import useAuth from "../hooks/useAuth";
+
 function Input(props) {
   const { onNewInput } = props;
 
@@ -105,9 +107,13 @@ function TodoPage() {
   const [loading, setLoading] = useState(true);
   const [todos, setTodos] = useState([]);
 
+  const { auth } = useAuth();
+  const { uid: userId = "" } = auth || {};
+
   useEffect(() => {
+    if (!userId) return;
     let isCurrent = true;
-    getAllTodos().then(todos => {
+    getAllTodos(userId).then(todos => {
       if (isCurrent) {
         setTodos(todos);
         setLoading(false);
@@ -116,16 +122,16 @@ function TodoPage() {
     return function() {
       isCurrent = false;
     };
-  }, []);
+  }, [userId]);
 
   const newInputHandler = todoText => {
-    createTodo({ task: todoText }).then(newTodo => {
+    createTodo(userId, { task: todoText }).then(newTodo => {
       setTodos([...todos, newTodo]);
     });
   };
 
   const onDeleteHandler = id => {
-    deleteTodo(id).then(() => {
+    deleteTodo(userId, id).then(() => {
       let filteredTodos = todos.filter(todo => {
         return todo.id !== id;
       });
@@ -134,7 +140,7 @@ function TodoPage() {
   };
 
   const onToggleDoneHander = todo => {
-    toggleIsDone(todo).then(() => {
+    toggleIsDone(userId, todo).then(() => {
       const newTodos = todos.map(item => {
         if (item.id !== todo.id) {
           return item;
@@ -151,14 +157,16 @@ function TodoPage() {
   }
 
   return (
-    <div className="App" style={{ width: "50%" }}>
-      <Input onNewInput={newInputHandler} />
-      <TodoList
-        todos={todos}
-        onDelete={onDeleteHandler}
-        onToggleDone={onToggleDoneHander}
-      />
-      <pre>{JSON.stringify(todos, null, 2)}</pre>
+    <div className="flex justify-center">
+      <div className="md:w-4/6">
+        <Input onNewInput={newInputHandler} />
+        <TodoList
+          todos={todos}
+          onDelete={onDeleteHandler}
+          onToggleDone={onToggleDoneHander}
+        />
+        <pre>{JSON.stringify(todos, null, 2)}</pre>
+      </div>
     </div>
   );
 }

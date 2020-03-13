@@ -1,9 +1,8 @@
 import React from "react";
-import TodoList from "./pages/Todo";
+import TodoList from "./pages/TodoList";
 import Home from "./pages/Home";
 import useAuth from "./hooks/useAuth";
-
-import { logout } from "./utils/auth";
+import NavBar from "./components/NavBar";
 
 function App() {
   const { auth, authAttempted } = useAuth();
@@ -17,9 +16,7 @@ function App() {
 function LoggedIn() {
   return (
     <div>
-      <div className="p-5">
-        <button onClick={logout}>Logout</button>
-      </div>
+      <NavBar />
       <TodoList />
     </div>
   );

@@ -1,8 +1,8 @@
 import { db } from "./base";
 
-export const getAllTodos = () => {
+export const getAllTodos = userId => {
   return db
-    .collection("todos")
+    .collection(`users/${userId}/todos`)
     .get()
     .then(snapshot => {
       const todos = snapshot.docs.map(item => {
@@ -11,13 +11,14 @@ export const getAllTodos = () => {
           id: item.id
         };
       });
+      console.log("getting totods of user: ", todos);
       return todos;
     });
 };
 
-export const createTodo = ({ task, isDone = false }) => {
+export const createTodo = (userId, { task, isDone = false }) => {
   return db
-    .collection("todos")
+    .collection(`users/${userId}/todos`)
     .add({
       task,
       isDone
@@ -33,16 +34,16 @@ export const createTodo = ({ task, isDone = false }) => {
     });
 };
 
-export const deleteTodo = id => {
+export const deleteTodo = (userId, id) => {
   return db
-    .collection("todos")
+    .collection(`users/${userId}/todos`)
     .doc(id)
     .delete();
 };
 
-export const toggleIsDone = todo => {
+export const toggleIsDone = (userId, todo) => {
   return db
-    .collection("todos")
+    .collection(`users/${userId}/todos`)
     .doc(todo.id)
     .update({ isDone: !todo.isDone });
 };
