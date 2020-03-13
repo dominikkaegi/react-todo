@@ -106,10 +106,16 @@ function TodoPage() {
   const [todos, setTodos] = useState([]);
 
   useEffect(() => {
+    let isCurrent = true;
     getAllTodos().then(todos => {
-      setTodos(todos);
-      setLoading(false);
+      if (isCurrent) {
+        setTodos(todos);
+        setLoading(false);
+      }
     });
+    return function() {
+      isCurrent = false;
+    };
   }, []);
 
   const newInputHandler = todoText => {
