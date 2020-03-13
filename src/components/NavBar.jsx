@@ -1,10 +1,13 @@
 import React from "react";
 import { logout } from "../utils/auth";
+import useAuth from "../hooks/useAuth";
 
 export default function Header() {
   const logoutHandler = () => {
     logout();
   };
+
+  const { auth } = useAuth();
 
   const toProfileHandler = () => {
     console.log("go to profile");
@@ -13,7 +16,11 @@ export default function Header() {
   return (
     <div className="p-1 bg-gray-300 flex justify-center">
       <div className="md:w-4/6 flex p-3 ">
-        <div className="md:w-4/6">UserName to Display</div>
+        <div className="md:w-4/6 ">
+          <span className="font-bold text-orange-500 uppercase tracking-wide">
+            {auth && auth.displayName}
+          </span>
+        </div>
         <div className="md:w-2/6 flex justify-end text-gray-600">
           <button onClick={toProfileHandler} className="px-1">
             Profile
