@@ -165,7 +165,6 @@ function TodoPage() {
           onDelete={onDeleteHandler}
           onToggleDone={onToggleDoneHander}
         />
-        <pre>{JSON.stringify(todos, null, 2)}</pre>
       </div>
     </div>
   );
