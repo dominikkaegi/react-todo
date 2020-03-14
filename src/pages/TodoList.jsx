@@ -6,13 +6,13 @@ import {
   toggleIsDone
 } from "../utils/todos";
 
-import useAuth from "../hooks/useAuth";
+import { useAuthContext } from "../AuthProvider";
 
 function TodoPage() {
   const [loading, setLoading] = useState(true);
   const [todos, setTodos] = useState([]);
 
-  const { auth } = useAuth();
+  const { auth } = useAuthContext();
   const { uid: userId = "" } = auth || {};
 
   useEffect(() => {

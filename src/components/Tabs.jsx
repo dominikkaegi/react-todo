@@ -13,7 +13,7 @@ function Tab({ active, onSelect, item }) {
 
 function Tabs(props) {
   const { data } = props;
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(1);
 
   return (
     <div className="flex justify-center column">

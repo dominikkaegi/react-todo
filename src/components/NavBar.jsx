@@ -1,13 +1,13 @@
 import React from "react";
 import { logout } from "../utils/auth";
-import useAuth from "../hooks/useAuth";
+import { useAuthContext } from "../AuthProvider";
 
-export default function Header() {
+export default function NavBar() {
   const logoutHandler = () => {
     logout();
   };
 
-  const { auth } = useAuth();
+  const { auth } = useAuthContext();
 
   const toProfileHandler = () => {
     console.log("go to profile");
